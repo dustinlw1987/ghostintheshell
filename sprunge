@@ -1,18 +1,28 @@
 #!/bin/sh
-
-if [ -z "$1" ]
-then
-	exec curl -s -F 'sprunge=<-' http://sprunge.us
+ 
+usage() {
+echo "$0 uploads from files or stdin to http://sprunge.us.  Fit it into a pipeline like any other unix tool, you're not an idiot."
+}
+ 
+if [ -t 0 ]; then
+  #Running interactively, checking for arguments... 
+  if [ "$*" ]; then
+    #echo Arguments present... 
+    if [ -f "$*" ]; then
+      #Uploading the contents of "$*"... 
+      cat "$*"
+    else
+      #Uploading the text "$*"... 
+      echo "$*"
+    fi | curl -F 'sprunge=<-' http://sprunge.us
+  else
+    #No arguments found, printing usage and exiting. 
+    usage
+  fi
 else
-	if [ -z "$2" ]
-	then
-		echo -n "$1:"
-		cat "$1" | "$0"
-	else
-		for i in "$@"
-		do
-			"$0" "$i"
-		done
-	fi
+  #Using input from a pipe or STDIN redirection... 
+  while read -r line ; do
+    echo $line
+  done | curl -F 'sprunge=<-' http://sprunge.us
 fi
 
